@@ -1,32 +1,50 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 function Home({ recipes }) {
   const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [checkedSteps, setCheckedSteps] = useState({});
+  const [isPopupOpen, setPopupOpen] = useState(false);
 
-  // Function to handle image click
+ 
   const handleImageClick = (index) => {
     setSelectedRecipe(recipes[index]);
+    setPopupOpen(true);
   };
 
-  // Function to clear the selected recipe
+ 
   const clearSelectedRecipe = () => {
     setSelectedRecipe(null);
+    setPopupOpen(false);
   };
 
-  // Function to toggle the checked state of a step
+  
   const toggleStepChecked = (stepId) => {
     if (selectedRecipe) {
-      const updatedRecipe = { ...selectedRecipe };
-      const updatedSteps = updatedRecipe.steps.map((step) => {
-        if (step.id === stepId) {
-          return { ...step, checked: !step.checked };
-        }
-        return step;
-      });
-      updatedRecipe.steps = updatedSteps;
-      setSelectedRecipe(updatedRecipe);
+      const updatedSteps = { ...checkedSteps };
+      updatedSteps[stepId] = !updatedSteps[stepId];
+      setCheckedSteps(updatedSteps);
     }
   };
+
+  
+  useEffect(() => {
+    if (selectedRecipe) {
+      const savedCheckedSteps =
+        JSON.parse(localStorage.getItem(`checkedSteps_${selectedRecipe.id}`)) ||
+        {};
+      setCheckedSteps(savedCheckedSteps);
+    }
+  }, [selectedRecipe]);
+
+  
+  useEffect(() => {
+    if (selectedRecipe) {
+      localStorage.setItem(
+        `checkedSteps_${selectedRecipe.id}`,
+        JSON.stringify(checkedSteps)
+      );
+    }
+  }, [selectedRecipe, checkedSteps]);
 
   return (
     <div className="home">
@@ -38,34 +56,42 @@ function Home({ recipes }) {
             className="recipe-card"
             onClick={() => handleImageClick(index)}
           >
+            <h3>{recipe.name}</h3>
             <img src={recipe.imageUrl} alt={recipe.name} />
           </div>
         ))}
       </div>
-      {selectedRecipe !== null && (
-        <div className="two-column-layout">
+      {selectedRecipe !== null && isPopupOpen && (
+        <div className="recipe-popup">
           <div className="recipe-details-popup">
             <h3>{selectedRecipe.name}</h3>
-            <ul>
-              {selectedRecipe.steps.map((step, stepIndex) => (
-                <li key={step.id}>
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={step.checked || false}
-                      onChange={() => toggleStepChecked(step.id)}
-                    />
-                    <span style={{ textDecoration: step.checked ? "line-through" : "none" }}>
-                      {step.step}
-                    </span>
-                  </label>
-                </li>
-              ))}
-            </ul>
-            <img className="popup-img" src={selectedRecipe.imageUrl} alt={selectedRecipe.name} />
+            {selectedRecipe.steps.map((step, stepIndex) => (
+              <label key={step.id}>
+                <input
+                  type="checkbox"
+                  checked={checkedSteps[step.id] || false}
+                  onChange={() => toggleStepChecked(step.id)}
+                />
+                <span
+                  style={{
+                    textDecoration: checkedSteps[step.id]
+                      ? "line-through"
+                      : "none",
+                  }}
+                >
+                  {step.step}
+                </span>
+              </label>
+            ))}
+            <img
+              className="popup-img"
+              src={selectedRecipe.imageUrl}
+              alt={selectedRecipe.name}
+            />
           </div>
-          <button onClick={clearSelectedRecipe}>Close</button>
-          <div></div>
+          <button className="close" onClick={clearSelectedRecipe}>
+            Close
+          </button>
         </div>
       )}
     </div>
