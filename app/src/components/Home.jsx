@@ -1,16 +1,31 @@
 import React, { useState } from "react";
 
 function Home({ recipes }) {
-  const [selectedRecipeIndex, setSelectedRecipeIndex] = useState(null);
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
 
   // Function to handle image click
   const handleImageClick = (index) => {
-    setSelectedRecipeIndex(index);
+    setSelectedRecipe(recipes[index]);
   };
 
   // Function to clear the selected recipe
   const clearSelectedRecipe = () => {
-    setSelectedRecipeIndex(null);
+    setSelectedRecipe(null);
+  };
+
+  // Function to toggle the checked state of a step
+  const toggleStepChecked = (stepId) => {
+    if (selectedRecipe) {
+      const updatedRecipe = { ...selectedRecipe };
+      const updatedSteps = updatedRecipe.steps.map((step) => {
+        if (step.id === stepId) {
+          return { ...step, checked: !step.checked };
+        }
+        return step;
+      });
+      updatedRecipe.steps = updatedSteps;
+      setSelectedRecipe(updatedRecipe);
+    }
   };
 
   return (
@@ -27,24 +42,30 @@ function Home({ recipes }) {
           </div>
         ))}
       </div>
-      {selectedRecipeIndex !== null && (
+      {selectedRecipe !== null && (
         <div className="two-column-layout">
           <div className="recipe-details-popup">
-            <h3>{recipes[selectedRecipeIndex].name}</h3>
+            <h3>{selectedRecipe.name}</h3>
             <ul>
-              {recipes[selectedRecipeIndex].steps.map((step, stepIndex) => (
-                <li key={step.id}>{step.step}</li>
-              ))} {/* Corrected placement of closing parentheses */}
+              {selectedRecipe.steps.map((step, stepIndex) => (
+                <li key={step.id}>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={step.checked || false}
+                      onChange={() => toggleStepChecked(step.id)}
+                    />
+                    <span style={{ textDecoration: step.checked ? "line-through" : "none" }}>
+                      {step.step}
+                    </span>
+                  </label>
+                </li>
+              ))}
             </ul>
-            <img
-              className="popup-img"
-              src={recipes[selectedRecipeIndex].imageUrl}
-              alt={recipes[selectedRecipeIndex].name}
-            />
+            <img className="popup-img" src={selectedRecipe.imageUrl} alt={selectedRecipe.name} />
           </div>
           <button onClick={clearSelectedRecipe}>Close</button>
-          <div>
-          </div>
+          <div></div>
         </div>
       )}
     </div>
