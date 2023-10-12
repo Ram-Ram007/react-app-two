@@ -1,3 +1,4 @@
+//final
 import React, { useState, useEffect } from "react";
 import "./App.css";
 import AddRecipe from "./components/Addrecipe";
@@ -47,11 +48,13 @@ function App() {
           </div>
         </ul>
       </nav>
-      {showAddRecipe ? (
-        <AddRecipe addRecipe={addRecipe} submitFunc={submitFunc} />
-      ) : (
-        <Home recipes={recipes} />
-      )}
+      <div className="home-form">
+        {showAddRecipe ? (
+          <AddRecipe addRecipe={addRecipe} submitFunc={submitFunc} />
+        ) : (
+          <Home recipes={recipes} />
+        )}
+      </div>
     </div>
   );
 }

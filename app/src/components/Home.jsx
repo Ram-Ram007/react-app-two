@@ -1,23 +1,22 @@
+// final
 import React, { useState, useEffect } from "react";
 
 function Home({ recipes }) {
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [checkedSteps, setCheckedSteps] = useState({});
   const [isPopupOpen, setPopupOpen] = useState(false);
+  const [favoritedRecipes, setFavoritedRecipes] = useState([]);
 
- 
   const handleImageClick = (index) => {
     setSelectedRecipe(recipes[index]);
     setPopupOpen(true);
   };
 
- 
   const clearSelectedRecipe = () => {
     setSelectedRecipe(null);
     setPopupOpen(false);
   };
 
-  
   const toggleStepChecked = (stepId) => {
     if (selectedRecipe) {
       const updatedSteps = { ...checkedSteps };
@@ -26,7 +25,16 @@ function Home({ recipes }) {
     }
   };
 
-  
+  const toggleFavorite = (recipe) => {
+    if (favoritedRecipes.includes(recipe)) {
+      setFavoritedRecipes(
+        favoritedRecipes.filter((favRecipe) => favRecipe !== recipe)
+      );
+    } else {
+      setFavoritedRecipes([...favoritedRecipes, recipe]);
+    }
+  };
+
   useEffect(() => {
     if (selectedRecipe) {
       const savedCheckedSteps =
@@ -36,7 +44,6 @@ function Home({ recipes }) {
     }
   }, [selectedRecipe]);
 
-  
   useEffect(() => {
     if (selectedRecipe) {
       localStorage.setItem(
@@ -48,7 +55,6 @@ function Home({ recipes }) {
 
   return (
     <div className="home">
-      <h2>Recipes</h2>
       <div className="recipe-container">
         {recipes.map((recipe, index) => (
           <div
@@ -58,42 +64,58 @@ function Home({ recipes }) {
           >
             <h3>{recipe.name}</h3>
             <img src={recipe.imageUrl} alt={recipe.name} />
+            <button onClick={() => toggleFavorite(recipe)}>
+              {favoritedRecipes.includes(recipe) ? "❤️" : "🤍"}
+            </button>
           </div>
         ))}
       </div>
-      {selectedRecipe !== null && isPopupOpen && (
-        <div className="recipe-popup">
-          <div className="recipe-details-popup">
-            <h3>{selectedRecipe.name}</h3>
-            {selectedRecipe.steps.map((step, stepIndex) => (
-              <label key={step.id}>
-                <input
-                  type="checkbox"
-                  checked={checkedSteps[step.id] || false}
-                  onChange={() => toggleStepChecked(step.id)}
+      <div className="click-popup">
+        {selectedRecipe !== null && isPopupOpen && (
+          <div className="recipe-popup">
+            <div className="recipe-details-popup">
+              <button>❤️</button>
+              <h3>{selectedRecipe.name}</h3>
+              {selectedRecipe.steps.map((step, stepIndex) => (
+                <label key={step.id}>
+                  <input
+                    type="checkbox"
+                    checked={checkedSteps[step.id] || false}
+                    onChange={() => toggleStepChecked(step.id)}
+                  />
+                  <span
+                    style={{
+                      textDecoration: checkedSteps[step.id]
+                        ? "line-through"
+                        : "none",
+                    }}
+                  >
+                    {step.step}
+                  </span>
+                </label>
+              ))}
+              <div>
+                <img
+                  className="popup-img"
+                  src={selectedRecipe.imageUrl}
+                  alt={selectedRecipe.name}
                 />
-                <span
-                  style={{
-                    textDecoration: checkedSteps[step.id]
-                      ? "line-through"
-                      : "none",
-                  }}
-                >
-                  {step.step}
-                </span>
-              </label>
-            ))}
-            <img
-              className="popup-img"
-              src={selectedRecipe.imageUrl}
-              alt={selectedRecipe.name}
-            />
+              </div>
+              <button className="close" onClick={clearSelectedRecipe}>
+                Close
+              </button>
+
+              {/* {recipes.map((recipe, index) => (
+                <div>
+                  <button onClick={() => toggleFavorite(selectedRecipe)}>
+                    {favoritedRecipes.includes(selectedRecipe) ? "❤️" : "🤍"}
+                  </button>
+                </div>
+              ))} */}
+            </div>
           </div>
-          <button className="close" onClick={clearSelectedRecipe}>
-            Close
-          </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
